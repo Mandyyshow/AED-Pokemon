@@ -59,6 +59,7 @@ int pokemonIgual(pokemon q, pokemon w);
 int pokemonNaPilha(Pilha *p, pokemon e);
 void embaralhar(pokemon *vetor, int n);
 void embaralharparceiro(int *vetor, int n);
+void printhabilidade(tp_habilidade h);
 
 void iniciaFilahab(tp_filahab *f);
 int insereFilahab(tp_filahab *f, tp_itemm e);
@@ -634,4 +635,11 @@ void calculadano(pokemon *pAta, pokemon *pDef, tp_habilidade h1){
             pDef->vida = pDef->vida - dano;
         }
     }
+}
+
+void printhabilidade(tp_habilidade hab){
+    printf("%s  " hab.nome);
+    printf("%s  ", hab.tipo);
+    printf("dano: %d  ", hab.dano);
+    printf("precisão: %d", hab.precisao);
 }
