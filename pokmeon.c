@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 #include "fila.h"
 #include "pilhaSTR.h"
 #define MAX 100
@@ -11,7 +12,7 @@
 typedef struct{
 char nome[MAX];
 char tipo[MAX];
-int dano;
+float dano;
 int precisao;
 }tp_habilidade;
 // estrutura de um pokemon
@@ -23,8 +24,8 @@ tp_habilidade habilidade1;
 tp_habilidade habilidade2;
 tp_habilidade habilidade3;
 tp_habilidade habilidade4;
-int defesa;
-int ataque;
+float defesa;
+float ataque;
 int velocidade;
 int vidamax;
 char tipo[MAX];
@@ -145,7 +146,7 @@ int main(){
         {"Skull Bash", "Normal", 130, 100},//40 //2 turnos
         {"Surf", "Water", 90, 100},
         {"Earthquake", "Ground", 100, 100},
-        {"Frenzy Plant", "Grass", 150, 90},
+        {"Frenzy Plant", "Grass", 120, 90},
         {"Calm Mind", "Psychic", 0, 100},  // +30% ataque +30% defesa por 2 turnos
         {"Dragon Dance", "Dragon", 0, 100},//+30% ataque +30% velocidade por 2 turnos
         {"Rest", "Psychic", 0, 100},   //46     //cura 50% do hp
@@ -153,13 +154,13 @@ int main(){
     
   //todos os pokemons presentes
     pokemon pokedex[15] = {
-          {"Pikachu", 35, 10, habilidades[0], habilidades[1], habilidades[2], habilidades[3], 40, 55, 90, 35, "Electric"},
+          {"Pikachu", 40, 10, habilidades[0], habilidades[1], habilidades[2], habilidades[3], 40, 55, 90, 40, "Electric"},
           {"Charizard", 78, 36, habilidades[4], habilidades[5], habilidades[6], habilidades[7], 78, 84, 100, 78, "Fire/Flying"},
           {"Bulbasaur", 45, 12, habilidades[8], habilidades[9], habilidades[25], habilidades[10], 49, 49, 45, 45,"Grass/Poison"},
           {"Squirtle", 44, 10, habilidades[11], habilidades[12], habilidades[13], habilidades[14], 65, 48, 43, 44, "Water"},
           {"Eevee", 55, 8, habilidades[1], habilidades[13], habilidades[15], habilidades[16], 50, 55, 55, 55, "Normal"},
           {"Jigglypuff", 115, 7, habilidades[20], habilidades[17], habilidades[18], habilidades[19], 20, 45, 20, 115, "Fairy"},
-          {"Snorlax", 160, 30, habilidades[17], habilidades[21], habilidades[46], habilidades[22], 65, 110, 30, 160,  "Normal"},
+          {"Snorlax", 160, 30, habilidades[17], habilidades[21], habilidades[46], habilidades[22], 100, 55, 30, 160,  "Normal"},
           {"Gengar", 60, 28, habilidades[23], habilidades[24], habilidades[26], habilidades[26], 60, 65, 110, 60, "Ghost/Poison"},
           {"Machamp", 90, 25, habilidades[28], habilidades[29], habilidades[30], habilidades[31], 85, 130, 55, 90, "Fighting"},
           {"Alakazam", 55, 35, habilidades[32], habilidades[23], habilidades[33], habilidades[44], 45, 50, 120, 55, "Psychic"},
@@ -286,10 +287,12 @@ printf("Todos os os seus parceiros:\n");
 x=0;
 }
 
-pokemon aliado, inimigo;
+pokemon aliado, inimigo, auxiliar1;
 tp_habilidade aliadohab, inimigohab;
-int escolha;
-int inimigosort;
+int escolhahab, escolhaacao, inimigosort, comb = 1;
+
+Pilha pokepilhamorto;
+inicializaPilhapok(&pokepilhamorto);
 
 aliado = trocaPokemon(&pokepilha[0]);
 inimigo = poppok(&pokepilha[1]);
@@ -300,24 +303,29 @@ printf("Inimigo escolheu o pokemon %s\n", inimigo.nome);
 
 printf("antes loop:  %d", alturaPilhapok(&pokepilha[0]));
 
-while(!pilhaVaziapok(&pokepilha[0]) && !pilhaVaziapok(&pokepilha[1])){
+while(comb == 1){
     printf("Inimigo: \n");
     printf("%s   %dlvl   vida: %d/%d\n", inimigo.nome, inimigo.nivel, inimigo.vida, inimigo.vidamax);
     printf("-------------------------------------------------------------------\n");
     printf("Aliado: \n");
     printf("%s   %dlvl   vida: %d/%d\n", aliado.nome, aliado.nivel, aliado.vida, aliado.vidamax);
-    printf("-------------------------------------------------------------------\n");
-    printf("Escolha uma habilidade para ser usada\n");
+    printf("-------------------------------------------------------------------\n\n\n\n");
+    printf("O que deseja fazer? 1 para lutar, 2 para trocar de pokemon, 3 para usar um item\n");    
+    scanf("%d", &escolhaacao);
+    printf("\n\n");
+
+    if(escolhaacao == 1){
+        printf("Escolha uma habilidade para ser usada\n");
     printf("----------------------------------------\n");
     printhabilidade(aliado.habilidade1);
     printhabilidade(aliado.habilidade2);
     printhabilidade(aliado.habilidade3);
     printhabilidade(aliado.habilidade4);
     printf("Digite 1, 2, 3 ou 4 para %s, %s, %s, %s, respectivamente\n", aliado.habilidade1.nome, aliado.habilidade2.nome, aliado.habilidade3.nome, aliado.habilidade4.nome);
-    scanf("%d", &escolha);
+    scanf("%d", &escolhahab);
     printf("\n\n");
 
-    switch(escolha){
+    switch(escolhahab){
         case 1:
         aliadohab =  aliado.habilidade1;
         break;
@@ -349,21 +357,36 @@ while(!pilhaVaziapok(&pokepilha[0]) && !pilhaVaziapok(&pokepilha[1])){
     printf("O pokemon adversário escolheu a habilidade %s\n", inimigohab.nome);
     combate(&aliado, &inimigo, aliadohab, inimigohab);
 
-    if(inimigo.vida <= 0){
+    if(inimigo.vida <= 0){                                                          //implementar loja e level up
         printf("O pokemon adversário morreu!\n");
+        if(alturaPilhapok(&pokepilha[1]) == 0){
+            printf("Todos os pokemons inimigos morreram. Jogo encerrado. Atualização para jogo infinito não concluída.\n");
+            break;
+        }
         inimigo = poppok(&pokepilha[1]);
         printf("O inimigo escolheu o pokemon %s\n", inimigo.nome);
-    }
+        }         
+        
     if(aliado.vida <= 0){
         printf("Seu pokemon morreu!\n");
+        auxiliar1 = poppok(&pokepilha[0]);               //retira o pokemon do topo da pilha
+        pushpok(&pokepilhamorto, auxiliar1);                    //empilha na pilha de mortos
+        if(pilhaVaziapok(&pokepilha[0])){
+            printf("Você não tem mais pokemons usáveis. Jogo encerrado.\n");
+            break;
+        }
         aliado = trocaPokemon(&pokepilha[0]);
     }
     printf("\n\n\n\n");
-}
+    }else if(escolhaacao == 2){
+        aliado = trocaPokemon(&pokepilha[0]);
+    }else{
+        printf("Loja!!!");
+    }
+    }
+    
   return 0;
 }
-
-
 
 
 //todas as funcoes usadas
@@ -376,8 +399,8 @@ void imprimirPokemon(pokemon p) {
     printf("Habilidade 2: %s\n", p.habilidade2.nome);
     printf("Habilidade 3: %s\n", p.habilidade3.nome);
     printf("Habilidade 4: %s\n", p.habilidade4.nome);
-  printf("Defesa : %d\n",p.defesa);
-  printf("Ataque : %d\n",p.ataque);
+  printf("Defesa : %.0lf\n",p.defesa);
+  printf("Ataque : %.0lf\n",p.ataque);
     printf("Velocidade : %d\n",p.velocidade);
     printf("Tipo: %s\n", p.tipo);
     printf("-------------------------------------\n");
@@ -606,9 +629,8 @@ void calculadano(pokemon *pAta, pokemon *pDef, tp_habilidade h1){
         return;
     }else{
         //calcular dano
-        int dano;
-        dano = (h1.dano*pAta->ataque)/100;
-        dano = dano - pDef->defesa;
+        float dano;
+        dano = (h1.dano*(pAta->ataque/pDef->defesa))/3;
 
         sorteio = rand()%100;
         if(sorteio>=95){
@@ -644,11 +666,11 @@ void calculadano(pokemon *pAta, pokemon *pDef, tp_habilidade h1){
             printf("%s é imune ao ataque %s!\n", pDef->nome, h1.nome);
             dano = 0;
         } else if (strcmp(h1.tipo, "Water") == 0 || strcmp(h1.tipo, "Flying") == 0) {
-            dano *= 1.5;
-            printf("%s foi super efetivo!\n", h1.nome);
-        } else if (strcmp(h1.tipo, "Electric") == 0 || strcmp(h1.tipo, "Grass") == 0) {
             dano *= 0.5;
             printf("%s foi pouco efetivo.\n", h1.nome);
+        } else if (strcmp(h1.tipo, "Electric") == 0 || strcmp(h1.tipo, "Grass") == 0) {
+            dano *= 1.5;
+            printf("%s foi super efetivo!\n", h1.nome);
         }
     } 
     // Fire/Flying
@@ -755,15 +777,12 @@ void calculadano(pokemon *pAta, pokemon *pDef, tp_habilidade h1){
             printf("%s foi pouco efetivo.\n", h1.nome);
         }
     }
-        if(dano <= 0){
-            printf("Dano causado de %s: 0\n", h1.nome);
-            return;
-        }else{
+        
             pDef->vida = pDef->vida - dano;
-            printf("Dano causado de %s: %d\n", h1.nome, dano);
-        }
+            printf("Dano causado de %s: %.3lf\n", h1.nome, dano);
+        
     }
-    printf("Vida de %s após o ataque: %d\n", pDef->nome, pDef->vida);
+    
 }
 
 //nao chamar funcao quando pilha está vazia, só quando um pokemon morrer e ainda tiver algum vivo
@@ -773,8 +792,9 @@ pokemon trocaPokemon(Pilha *poke){
     inicializaPilhapok (&pokeaux);
     char trocapoke[MAX];
     pokemon p;
-    printf("Pokemons disponíveis:\n");
+    pokemon paux;
 
+    printf("Pokemons disponíveis:\n");
     while(!pilhaVaziapok(poke)){
         p = poppok(poke);
         imprimirPokemon(p); 
@@ -784,34 +804,75 @@ pokemon trocaPokemon(Pilha *poke){
         p = poppok(&pokeaux);
         pushpok(poke, p);
     }
-
+    
     printf("Digite o nome do pokemon que quer colocar em batalha: ");
     scanf("%s", trocapoke);
     
     while(!pilhaVaziapok(poke)){
         p = poppok(poke);
-        
     if(strcmp(p.nome, trocapoke) == 0){
-        printf("Pokemon escolhido: %s\n", p.nome);
-        return p;
+        printf("Pokemon escolhido: %s\n", p.nome);  //pokemon escolhido = p
+        break;
     }else{
+        pushpok(&pokeaux, p); 
+    }
+    }
+    while(!pilhaVaziapok(&pokeaux)){
+        paux = poppok(&pokeaux);                    //volta pra pilha original
+        pushpok(poke, paux);
+    }
+    pushpok(poke, p);                               //pokemon escolhido fica no topo
+    return p;
+}
+
+pokemon trocaPokemonVivo(Pilha *poke){
+
+    Pilha pokeaux;
+    inicializaPilhapok (&pokeaux);
+    char trocapoke[MAX];
+    pokemon p;
+    pokemon paux;
+
+    paux = poppok(poke);
+    if(pilhaVaziapok(poke)){
+        printf("Você não tem outros pokemons disponiveis!\n");
+        return paux;                                            //retorna pokemon atual
+    }
+    printf("Pokemons disponíveis:\n");
+    while(!pilhaVaziapok(poke)){
+        p = poppok(poke);
+        imprimirPokemon(p); 
         pushpok(&pokeaux, p);
-        
-    }
-    }
-    printf("aaa  %d", alturaPilhapok(&pokeaux));
+    }                                           //printa pokemon, sem excluir
     while(!pilhaVaziapok(&pokeaux)){
         p = poppok(&pokeaux);
         pushpok(poke, p);
-    } 
-    printf("Escolha inválida, pokemon escolhido: %s\n", p.nome);
+    }
+    
+    printf("Digite o nome do pokemon que quer colocar em batalha: ");
+    scanf("%s", trocapoke);
+    
+    while(!pilhaVaziapok(poke)){
+        p = poppok(poke);
+    if(strcmp(p.nome, trocapoke) == 0){
+        printf("Pokemon escolhido: %s\n", p.nome);  //pokemon escolhido = p
+        break;
+    }else{
+        pushpok(&pokeaux, p); 
+    }
+    }
+    while(!pilhaVaziapok(&pokeaux)){
+        paux = poppok(&pokeaux);                    //volta pra pilha original
+        pushpok(poke, paux);
+    }
+    pushpok(poke, p);                               //pokemon escolhido fica no topo
     return p;
 }
 
 void printhabilidade(tp_habilidade hab){
     printf("%s  ",hab.nome);
     printf("%s  ", hab.tipo);
-    printf("dano: %d  ", hab.dano);
-    printf("precisão: %d", hab.precisao);
+    printf("dano: %.0lf  ", hab.dano);
+    printf("precisão: %d\n", hab.precisao);
     printf("------------------------------------\n");
 }
