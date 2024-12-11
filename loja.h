@@ -154,19 +154,18 @@ void destroi_listase(loja **l)
 }
 
 // Funcao para definir 3 itens aleatorios e adiciona-los a lista
-int defineItensRandom(loja **l)
+int defineItensRandom(loja **l, char *buffer, int *pmoney)
 {
     int x;
-    itens opcoes[6] = {
+    itens opcoes[5] = {
         {"Pocao Base de Vida", "Restaura uma pequena quantidade de vida.", 50},
         {"Pocao Forte de Vida", "Restaura uma quantidade maior de vida.", 100},
-        {"Reviver", "Revive um Pokemon desmaiado com metade da vida.", 200},
         {"Pokebola", "Usada para capturar Pokemon selvagens.", 150},
         {"Aumentar Ataque", "Aumenta temporariamente o ataque do Pokemon.", 120},
         {"Aumentar Defesa", "Aumenta temporariamente a defesa do Pokemon.", 120}};
 
     int indices[3];         // Para armazenar sorteados
-    int sorteados[6] = {0}; // para evitar repetição
+    int sorteados[5] = {0}; // para evitar repetição
 
     // Seleciona 3 índices aleatórios únicos
     for (int i = 0; i < 3; i++)
@@ -174,7 +173,7 @@ int defineItensRandom(loja **l)
         int indice;
         do
         {
-            indice = rand() % 6; // Gera um índice entre 0 e 5
+            indice = rand() % 5; // Gera um índice entre 0 e 4
         } while (sorteados[indice] == 1); // Repete até achar um índice ainda não sorteado
         sorteados[indice] = 1; // Marca o índice como sorteado
         indices[i] = indice;
@@ -190,12 +189,13 @@ int defineItensRandom(loja **l)
 
     int saidai = 0;
     loja *atu = *l;
-    char aux[MAX];
     // Loop para perguntar sobre a compra dos itens
     do
     {
+        printf("Dinhiro atual: %d\n", *pmoney);
         printf("Escolha o item de 0 a 3 (0 para cancelar): ");
         scanf("%d", &x);
+        printf("--------------------------------------------------------\n");
 
         // Valida a escolha do usuário (entre 0 e 3)
         while (x < 0 || x > 3)
@@ -211,6 +211,11 @@ int defineItensRandom(loja **l)
             break;
 
         case 1:
+            if(*pmoney < atu->info.money) {
+                printf("Dinheiro insuficiente!\n");
+                x=2;
+                break;
+            }
             printf("Deseja comprar o item %s? Se sim, digite 1; caso contrario, digite 2: ", atu->info.nome);
             scanf("%d", &x);
             
@@ -218,12 +223,22 @@ int defineItensRandom(loja **l)
 
         case 2:
             atu = atu->prox;
+            if(*pmoney < atu->info.money) {
+                printf("Dinheiro insuficiente!\n");
+                x=2;
+                break;
+            }
             printf("Deseja comprar o item %s? Se sim, digite 1; caso contrario, digite 2: ", atu->info.nome);
             scanf("%d", &x);
             break;
 
         case 3:
             atu = atu->prox->prox;
+            if(*pmoney < atu->info.money) {
+                printf("Dinheiro insuficiente!\n");
+                x=2;
+                break;
+            }
             printf("Deseja comprar o item %s? Se sim, digite 1; caso contrario, digite 2: ", atu->info.nome);
             scanf("%d", &x);
             break;
@@ -236,8 +251,9 @@ int defineItensRandom(loja **l)
 
         if (x == 1)
         {
+            *pmoney -= atu->info.money;
             printf("Item %s comprado!\n", atu->info.nome);
-            strcpy(aux, atu->info.nome);
+            strcpy(buffer, atu->info.nome);                 //passa para a main o item comprado
 
 
             saidai = 1;
@@ -245,6 +261,7 @@ int defineItensRandom(loja **l)
 
         else if (x == 2)
         {
+            strcpy(buffer, "Nenhum");
             printf("Compra cancelada.\n");
             saidai = 0;
         }
