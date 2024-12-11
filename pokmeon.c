@@ -5,6 +5,7 @@
 #include <math.h>
 #include "pokemon.h"
 #include "loja.h"
+#include "ranking.h"
 #define MAX 100
 #define MAXt 5
 
@@ -73,7 +74,7 @@ int main() {
 		{"Extreme Speed", "Normal", 80, 100}, //+2prio
 		{"Fire Fang", "Fire", 65, 95},
 		{"Skull Bash", "Normal", 130, 100},//40 //2 turnos
-		{"Surf", "Water", 90, 100},
+		{"Surf", "Water", 90, 100},	
 		{"Earthquake", "Ground", 100, 100},
 		{"Frenzy Plant", "Grass", 120, 90},
 		{"Calm Mind", "Psychic", 0, 100},  // +30% ataque +30% defesa
@@ -89,7 +90,7 @@ int main() {
 		{"Squirtle", 44, 10, habilidades[11], habilidades[12], habilidades[13], habilidades[14], 65, 48, 43, 44, "Water"},
 		{"Eevee", 55, 8, habilidades[1], habilidades[13], habilidades[15], habilidades[16], 50, 55, 55, 55, "Normal"},
 		{"Jigglypuff", 115, 7, habilidades[20], habilidades[17], habilidades[18], habilidades[19], 20, 45, 20, 115, "Fairy"},
-		{"Snorlax", 160, 30, habilidades[17], habilidades[21], habilidades[46], habilidades[22], 90, 55, 30, 160,  "Normal"},
+		{"Snorlax", 130, 30, habilidades[17], habilidades[21], habilidades[46], habilidades[22], 75, 55, 30, 130,  "Normal"},
 		{"Gengar", 60, 28, habilidades[23], habilidades[24], habilidades[26], habilidades[26], 60, 65, 110, 60, "Ghost/Poison"},
 		{"Machamp", 90, 25, habilidades[28], habilidades[29], habilidades[30], habilidades[31], 70, 90, 55, 90, "Fighting"},
 		{"Alakazam", 70, 35, habilidades[32], habilidades[23], habilidades[33], habilidades[44], 50, 80, 120, 70, "Psychic"},
@@ -207,20 +208,24 @@ int main() {
 		printf("-------------------------------------\n");
 		printPilhapok(pokepilha[0]);
 		x=0;
+		system("cls");
+
 	}
 
 	pokemon aliado, inimigo, auxiliar1;
+	int money = 1000, pokebola = 5;	
 	tp_habilidade aliadohab, inimigohab;
-	int escolhahab, escolhaacao, inimigosort, comb = 1, round = 1, capturou;
-
+	int escolhahab, escolhaacao=0, inimigosort, comb = 1, round = 1, capturou;
+	int pontuacao=0;
+	char item_comprado[50];
 	Pilha pokepilhamorto;
 	inicializaPilhapok(&pokepilhamorto);
-	
+
 	loja *l = inicializa_listase();
-	
 
 	aliado = trocaPokemon(&pokepilha[0]);
 	inimigo = poppok(&pokepilha[1]);
+	system("cls");
 	printf("\n");
 	printf("-------------------------------------\n");
 	printf("Jogador escolheu o pokemon %s\n", aliado.nome);
@@ -234,8 +239,15 @@ int main() {
 		printf("Aliado: \n");
 		printf("%s  LVL %d  vida: %d/%d\n", aliado.nome, aliado.nivel, aliado.vida, aliado.vidamax);
 		printf("-------------------------------------------------------------------\n\n");
-		printf("O que deseja fazer?\n///////\n1 para lutar\n2 para trocar de pokemon\n3 para usar uma pokebola\n");
+		escolhaacao=0;
+		while(escolhaacao < 1 || escolhaacao > 3){
+		printf("O que deseja fazer?\n///////\n1 para lutar\n2 para trocar de pokemon\n3 usar uma pokebola\n");
 		scanf("%d", &escolhaacao);
+		if(escolhaacao < 1 || escolhaacao > 3) {
+			printf("Escolha inválida!\n\n");
+		}
+		}
+		
 		printf("\n");
 
 		if(escolhaacao == 1) {
@@ -248,6 +260,8 @@ int main() {
 			printf("Digite:\n1 para --> %s\n2 para --> %s\n3 para --> %s\n4 para --> %s\n----------------------------------------\n", aliado.habilidade1.nome, aliado.habilidade2.nome, aliado.habilidade3.nome, aliado.habilidade4.nome);
 			scanf("%d", &escolhahab);
 			printf("\n\n");
+			system("cls");
+
 
 			switch(escolhahab) {
 			case 1:
@@ -282,7 +296,6 @@ int main() {
 			combate(&aliado, &inimigo, aliadohab, inimigohab);
 
 			if(inimigo.vida <= 0) {
-				defineItensRandom(&l);
 				printf("O pokemon adversario morreu\n(R.I.P)!\n");
 
 				if(alturaPilhapok(&pokepilha[1]) == 0) {
@@ -298,6 +311,17 @@ int main() {
 				for(int i = 0; i<round; i++) {              //aumenta status do inimigo cada vez q ele morre
 					level_up(&inimigo);
 				}
+				money += 90;
+				pontuacao += 50;
+				defineItensRandom(&l, item_comprado, &money);
+				if(strcmp(item_comprado, "Nenhum") != 0){
+				if(strcmp(item_comprado, "Pokebola") == 0){
+					pokebola++;
+				}
+				else{
+					usa_item(&aliado, item_comprado);
+				}
+				}
 				printf("Os inimigos ficaram mais fortes!!!\n\n");
 				printf("\n\n'HERE COMES A NEW CHALLENGER!!!'\n\n%s selvagem apareceu!!!\n", inimigo.nome);
 				round ++;
@@ -312,6 +336,8 @@ int main() {
 				pushpok(&pokepilhamorto, auxiliar1);                    //empilha na pilha de mortos
 				if(pilhaVaziapok(&pokepilha[0])) {
 					printf("\n---------------------------------\nVoce nao tem mais pokemons usaveis. Jogo encerrado.\n\nGAME OVER");
+					salvar_ranking(nome, pontuacao);
+					exibir_ranking();
 					break;
 				}
 				aliado = trocaPokemon(&pokepilha[0]);
@@ -321,10 +347,14 @@ int main() {
 		} else if(escolhaacao == 2) {
 			aliado = trocaPokemonVivo(&pokepilha[0]);
 
-		} else {//escolher item
-			//se usar pokebola vvvvvv, se nao, aplicar os outros itens (pode ser com função)
-			//tudo isso abaixo é para se usar pokebola!!!!
-			
+		} else {
+			if(pokebola == 0) {
+				printf("Voce nao tem mais pokebolas.\n");
+			}else if(alturaPilhapok(&pokepilha[0]) >= 6) {
+				printf("Sua equipe está cheia. Não é possível capturar mais pokemons.\n");
+			}
+			else{
+				pokebola--;
 			capturou = captura(inimigo.vida, inimigo.vidamax);
 			if(capturou){
 				inimigo.vida = inimigo.vidamax*0.6;
@@ -343,16 +373,26 @@ int main() {
 				for(int i = 0; i<round; i++) {              //aumenta status do inimigo cada vez q ele morre
 					level_up(&inimigo);
 				}
-				defineItensRandom(&l);
+				money += 90;
+				pontuacao += 50;
+				defineItensRandom(&l, item_comprado, &money);
+				if(strcmp(item_comprado, "Nenhum") != 0){
+				if(strcmp(item_comprado, "Pokebola") == 0){
+					pokebola++;
+				}
+				else{
+					usa_item(&aliado, item_comprado);
+				}
+				}
+				}
 				printf("Os inimigos ficaram mais fortes!!!\n\n");	
 				printf("\n\n'HERE COMES A NEW CHALLENGER!!!'\n\n%s selvagem apareceu!!!\n", inimigo.nome);
 				round ++;
 				printf("%s ficou mais forte!!!\n", aliado.nome);
 				level_up(&aliado);
-				
+			}
 			}
 		}
-	}
 
 	return 0;
 }
